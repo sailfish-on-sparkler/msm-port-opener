@@ -1,5 +1,6 @@
 [Unit]
 Description=Qualcomm modem port opener
+After=qrtr-ns.service rmtfs.service
 Before=ofono.service
 
 [Service]
