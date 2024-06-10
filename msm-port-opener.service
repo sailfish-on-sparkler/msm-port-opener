@@ -5,7 +5,7 @@ Before=ofono.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/msm-port-opener
+ExecStart=/bin/sh -c 'while ! /usr/sbin/msm-port-port-opener; do sleep 1; done'
 RemainAfterExit=yes
 
 [Install]
