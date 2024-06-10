@@ -1,0 +1,11 @@
+[Unit]
+Description=Qualcomm modem port opener
+Before=ofono.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/msm-port-opener
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

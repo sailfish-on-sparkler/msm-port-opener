@@ -1,0 +1,25 @@
+package dpm;
+
+struct qmi_result {
+    u16 result;
+    u16 error;
+};
+
+struct hw_data_port {
+    u32 ep_type;
+    u32 iface_id;
+    u32 rx_ep;
+    u32 tx_ep;
+};
+
+const QMI_SERVICE_DPM = 47;
+
+const DPM_OPEN_PORT = 0x20;
+
+request open_port_req {
+    optional hw_data_port hw_data_ports[1] = 0x11;
+};
+
+response open_port_rsp {
+    required qmi_result result = 0x02;
+};
