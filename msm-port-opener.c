@@ -13,6 +13,7 @@ int main(void)
 	int fd = qrtr_open(0);
 	uint32_t node, port;
 	uint32_t dpm_node, dpm_port;
+	unsigned int msg_id;
 	struct dpm_open_port_req open_port_req = {
 		.hw_data_ports_valid = true,
 		.hw_data_ports_len = 1,
@@ -20,6 +21,7 @@ int main(void)
 			{ .ep_type = 5, .iface_id = 1, .rx_ep = 1, .tx_ep = 1 },
 		},
 	};
+	struct dpm_open_port_rsp open_port_rsp;
 
 	if (fd < 0) {
 		perror("qrtr_open failed");
@@ -78,9 +80,39 @@ int main(void)
 			fprintf(stderr, "ignoring non-dpm packet from (%u, %u)\n", node, port);
 			continue;
 		}
-	} while (0);
 
-	fprintf(stderr, "got dpm response\n");
+		qmi_pkt.data_len = ret;
+
+		ret = qmi_decode_header(&qmi_pkt, &msg_id);
+		if (ret < 0) {
+			fprintf(stderr, "failed to decode response header\n");
+			return -1;
+		}
+
+		fprintf(stderr, "got dpm response (%02x)\n", msg_id);
+		if (msg_id != DPM_OPEN_PORT) {
+			fprintf(stderr, "not a dpm_open_port_rsp, ignoring\n");
+			continue;
+		}
+
+		break;
+	} while (1);
+
+	ret = qmi_decode_message(&open_port_rsp, NULL, &qmi_pkt,
+				QMI_RESPONSE, DPM_OPEN_PORT,
+				dpm_open_port_rsp_ei);
+	if (ret < 0) {
+		fprintf(stderr, "failed to decode dpm_open_port_rsp\n");
+		return -1;
+	}
+
+	if (open_port_rsp.result.result != QMI_RESULT_SUCCESS_V01) {
+		fprintf(stderr, "dpm_open_port error %u\n",
+			open_port_rsp.result.error);
+		return -1;
+	}
+
+	fprintf(stderr, "dpm_open_port successful\n");
 
 	return 0;
 }
